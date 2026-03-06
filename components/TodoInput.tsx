@@ -5,22 +5,26 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "convex/react";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
-import { Alert, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function TodoInput(){
     const { colors } = useTheme();
     const homeStyles = createHomeStyles(colors);
 
     const [newTodo, setNewTodo] = useState("");
+    const [loading, setLoading] = useState(false);
     const addTodo = useMutation(api.todos.addTodo);
 
     const handleAddTodo = async () => {
-        if(newTodo.trim()){
+        if(!loading && newTodo.trim()){
             try {
+                setLoading(true);
                 await addTodo({ text : newTodo.trim() });
                 setNewTodo("");
             } catch (error) {
                 Alert.alert("Error", "Failed to add todo");
+            }finally {
+                setLoading(false);
             }
         }
     };
@@ -44,10 +48,14 @@ export default function TodoInput(){
                 >
 
                     <LinearGradient
-                        colors={newTodo.trim() ? colors.gradients.primary : colors.gradients.muted}
+                        colors={newTodo.trim() && !loading ? colors.gradients.primary : colors.gradients.muted}
                         style={[homeStyles.addButton, !newTodo.trim() && homeStyles.addButtonDisabled]}
                     >
-                        <Ionicons name="add" size={24} color="#ffffff" />
+                        {loading ? (
+                            <ActivityIndicator size="large" color={colors.textMuted} />
+                        ) : (
+                            <Ionicons name="add" size={24} color="#eee" />
+                        )}
                     </LinearGradient> 
                     
                 </TouchableOpacity>
